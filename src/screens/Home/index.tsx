@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Image, TextInput, Dimensions } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Image, TextInput, Dimensions, ActivityIndicator } from "react-native";
 import { Avatar, Badge } from 'react-native-elements'
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import People from "./People";
@@ -7,10 +7,14 @@ import Planets from "./Planets";
 import Films from "./Films";
 import Starships from "./Starships";
 const initialLayout = { width: Dimensions.get('window').width };
+import axios from 'react-native-axios';
 
 const Home = () => {
 
     //states
+    const [loader, setLoader] = useState(false)
+    const [list, setList] = useState([])
+    const [listAlias, setListAlias] = useState([])
     const [index, setIndex] = useState(0)
     const [routes] = useState([
         { key: 'people', title: 'People' },
@@ -18,28 +22,89 @@ const Home = () => {
         { key: 'films', title: 'Films' },
         { key: 'starships', title: 'Starships' },
     ]);
+    const [text, setText] = useState('')
+
+    useEffect(() => {
+        getList()
+
+        //reset search text value when user switch to other tab
+        setText("")
+    }, [index])
+
+
+    // To call an api based on index
+    const peopleURL = 'https://swapi.dev/api/people'
+    const planetURL = 'https://swapi.dev/api/planets'
+    const filmURL = 'https://swapi.dev/api/films'
+    const starshipURL = 'https://swapi.dev/api/starships'
+
+    const fetchUrl = () => {
+        switch (index) {
+            case 0:
+                return peopleURL
+            case 1:
+                return planetURL
+            case 2:
+                return filmURL
+            case 3:
+                return starshipURL
+        }
+    }
+
+    const getList = () => {
+        setLoader(true)
+        axios.get(fetchUrl())
+            .then(function (response: any) {
+                let data = response?.data
+                let results = data?.results
+                setList(results)
+                setListAlias(results)
+                setLoader(false)
+            })
+            .catch(function (error: any) {
+                console.log(error);
+            });
+    }
+
+    const loaderView = () => {
+        return (
+            <ActivityIndicator
+                size="large"
+                color={'blue'}
+                style={styles.loaderStyle}
+            />
+        );
+    };
 
     const peopleComponent = () => {
         return (
-            <People />
+            <>
+                {loader ? loaderView() : <People list={list} />}
+            </>
         )
     }
 
     const planetComponent = () => {
         return (
-            <Planets />
+            <>
+                {loader ? loaderView() : <Planets list={list} />}
+            </>
         )
     }
 
     const filmComponent = () => {
         return (
-            <Films />
+            <>
+                {loader ? loaderView() : <Films list={list} />}
+            </>
         )
     }
 
     const starshipComponent = () => {
         return (
-            <Starships />
+            <>
+                {loader ? loaderView() : <Starships list={list} />}
+            </>
         )
     }
 
@@ -81,6 +146,19 @@ const Home = () => {
         </View>
     );
 
+    //search item by name
+    const searchItem = (searchVal: string) => {
+        const fltrlst = listAlias?.filter(item => {
+            const itemName = item.name?.toUpperCase()
+            const searchValRef = searchVal.toString().toUpperCase();
+            return itemName.indexOf(searchValRef) > -1;
+        });
+        if (fltrlst != undefined) {
+            setList(fltrlst)
+            setText(searchVal)
+        } 
+    }
+
 
     return (
         <View style={styles.container}>
@@ -107,7 +185,7 @@ const Home = () => {
                 </View>
             </View>
             <View style={{ marginHorizontal: 12 }}>
-                <TextInput style={styles.searchBar} placeholder="Search" />
+                <TextInput style={styles.searchBar} value={text} placeholder="Search" onChangeText={(e)=>searchItem(e)} />
             </View>
 
             <TabView
@@ -161,5 +239,11 @@ const styles = StyleSheet.create({
     line: {
         borderBottomWidth: 1,
         borderBottomColor: 'lightgrey',
+    },
+    loaderStyle: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1,
+        backgroundColor: 'white'
     },
 })

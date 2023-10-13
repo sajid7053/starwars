@@ -6,46 +6,27 @@ import moment = require("moment");
 import CModal from "../../components/CModal";
 const { height } = Dimensions.get('window');
 
+interface PeopleProps {
+    list: any
+}
+
 type charactersDescription = {
     name?: string,
     birth_year?: string,
 }
 
 
-const People = () => {
+const People = (props: PeopleProps) => {
+    const {list} = props
     const [characterList, setCharacterList] = useState<charactersDescription[]>([])
-    const [loader, setLoader] = useState(false)
     const [itemObject, setItemObject] = useState<charactersDescription>({})
     const [modal, setModal] = useState(false)
 
 
     useEffect(() => {
-        getCharacterList()
+        setCharacterList(list)
     }, [])
 
-    const loaderView = () => {
-        return (
-            <ActivityIndicator
-                size="large"
-                color={'blue'}
-                style={styles.loaderStyle}
-            />
-        );
-    };
-
-    const getCharacterList = () => {
-        setLoader(true)
-        axios.get('https://swapi.dev/api/people')
-            .then(function (response: any) {
-                let data = response?.data
-                let results = data?.results
-                setCharacterList(results)
-                setLoader(false)
-            })
-            .catch(function (error: any) {
-                console.log(error);
-            });
-    }
 
     const ModalUI = (item: charactersDescription) => {
         return (
@@ -106,7 +87,6 @@ const People = () => {
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
                     renderItem={renderList}
-                    ListEmptyComponent={() => <EmptyList msg={"No result"} />}
                     key={moment().valueOf().toString()} />
             </>
         )
@@ -141,7 +121,7 @@ const People = () => {
     }
     return (
         <View style={styles.container}>
-            {loader ? loaderView() : renderCharacters()}
+            {renderCharacters()}
             {modal && showModal()}
         </View>
     );

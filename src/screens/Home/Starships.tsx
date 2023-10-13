@@ -7,6 +7,10 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import CModal from "../../components/CModal";
 const { height } = Dimensions.get('window');
 
+interface StarshipProps {
+    list: any
+}
+
 type StarshipDetails = {
     name?: string,
     model?: string,
@@ -15,7 +19,8 @@ type StarshipDetails = {
     manufacturer?: string
 }
 
-const Starships = () => {
+const Starships = (props: StarshipProps) => {
+    const { list } = props
     const [loader, setLoader] = useState(false)
     const [starShipList, setStarShipList] = useState<StarshipDetails[]>([])
     const [openModal, setModal] = useState(false)
@@ -23,32 +28,9 @@ const Starships = () => {
 
 
     useEffect(() => {
-        getStarshipList()
+        setStarShipList(list)
     }, [])
 
-    const getStarshipList = () => {
-        setLoader(true)
-        axios.get('https://swapi.dev/api/starships')
-            .then(function (response: any) {
-                let data = response?.data
-                let results = data?.results
-                setStarShipList(results)
-                setLoader(false)
-            })
-            .catch(function (error: any) {
-                console.log(error);
-            });
-    }
-
-    const loaderView = () => {
-        return (
-            <ActivityIndicator
-                size="large"
-                color={'blue'}
-                style={styles.loaderStyle}
-            />
-        );
-    };
 
     const openPopUp = (item: StarshipDetails) => {
         setModal(true)
@@ -70,9 +52,9 @@ const Starships = () => {
                             <Text style={styles.titleText}>{item.name}</Text>
                             <View style={{ flexDirection: 'row', marginTop: 10, flex: 1 }}>
                                 <Text style={{ flex: 1 }}>{item.model}</Text>
-                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                    <View style={[styles.threeDots,{backgroundColor: 'grey'}]}></View>
-                                    <Text style={{marginLeft: 5}}>{item.starship_class}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={[styles.threeDots, { backgroundColor: 'grey' }]}></View>
+                                    <Text style={{ marginLeft: 5 }}>{item.starship_class}</Text>
                                 </View>
                             </View>
                         </View>
@@ -109,7 +91,6 @@ const Starships = () => {
                 data={starShipList}
                 showsVerticalScrollIndicator={false}
                 renderItem={renderList}
-                ListEmptyComponent={() => <EmptyList msg={"No result"} />}
                 key={moment().valueOf().toString()} />
         )
     }
@@ -135,7 +116,7 @@ const Starships = () => {
 
     return (
         <View style={styles.container}>
-            {loader ? loaderView() : renderUI()}
+            {renderUI()}
             {openModal && showModal()}
         </View>
     );

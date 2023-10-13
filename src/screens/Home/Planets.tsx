@@ -6,6 +6,10 @@ import moment = require("moment");
 import CModal from "../../components/CModal";
 const { height } = Dimensions.get('window');
 
+interface PlanetProps {
+    list: any
+}
+
 type PLanetsDetails = {
     name?: string,
     population?: string,
@@ -13,7 +17,8 @@ type PLanetsDetails = {
     orbital_period?: string
 }
 
-const Planets = () => {
+const Planets = (props: PlanetProps) => {
+    const { list } = props
     const [loader, setLoader] = useState(false)
     const [planetList, setPlanetList] = useState<PLanetsDetails[]>([])
     const [itemObject, setItemObject] = useState<PLanetsDetails>({})
@@ -21,32 +26,9 @@ const Planets = () => {
 
 
     useEffect(() => {
-        getPlanetList()
+        setPlanetList(list)
     }, [])
 
-    const getPlanetList = () => {
-        setLoader(true)
-        axios.get('https://swapi.dev/api/planets')
-            .then(function (response: any) {
-                let data = response?.data
-                let results = data?.results
-                setPlanetList(results)
-                setLoader(false)
-            })
-            .catch(function (error: any) {
-                console.log(error);
-            });
-    }
-
-    const loaderView = () => {
-        return (
-            <ActivityIndicator
-                size="large"
-                color={'blue'}
-                style={styles.loaderStyle}
-            />
-        );
-    };
 
     const commonUI = (item: PLanetsDetails, fromPopup: Boolean) => {
         return (
@@ -111,7 +93,6 @@ const Planets = () => {
                 data={planetList}
                 showsVerticalScrollIndicator={false}
                 renderItem={renderList}
-                ListEmptyComponent={() => <EmptyList msg={"No result"} />}
                 key={moment().valueOf().toString()} />
         )
     }
@@ -119,7 +100,7 @@ const Planets = () => {
 
     return (
         <View style={styles.container}>
-            {loader ? loaderView() : renderUI()}
+            {renderUI()}
             {modal && showModal()}
         </View>
     );

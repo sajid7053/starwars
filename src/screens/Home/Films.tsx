@@ -6,6 +6,10 @@ import moment = require("moment");
 import CModal from "../../components/CModal";
 const { height } = Dimensions.get('window');
 
+interface FilmProps {
+    list: any
+}
+
 type FilmDetails = {
     release_date?: string,
     title?: string,
@@ -13,40 +17,17 @@ type FilmDetails = {
     director?: string
 }
 
-const Films = () => {
-    const [loader, setLoader] = useState(false)
+const Films = (props: FilmProps) => {
+    const {list} = props
     const [filmList, setFilmList] = useState<FilmDetails[]>([])
     const [itemObject, setItemObject] = useState<FilmDetails>({})
     const [modal, setModal] = useState(false)
 
 
     useEffect(() => {
-        getFilmList()
+        setFilmList(list)
     }, [])
 
-    const getFilmList = () => {
-        setLoader(true)
-        axios.get('https://swapi.dev/api/films')
-            .then(function (response: any) {
-                let data = response?.data
-                let results = data?.results
-                setFilmList(results)
-                setLoader(false)
-            })
-            .catch(function (error: any) {
-                console.log(error);
-            });
-    }
-
-    const loaderView = () => {
-        return (
-            <ActivityIndicator
-                size="large"
-                color={'blue'}
-                style={styles.loaderStyle}
-            />
-        );
-    };
 
     //date convert format
     const convertDateFormat = (date: any) => {
@@ -126,7 +107,6 @@ const Films = () => {
                 data={filmList}
                 showsVerticalScrollIndicator={false}
                 renderItem={renderList}
-                ListEmptyComponent={() => <EmptyList msg={"No result"} />}
                 key={moment().valueOf().toString()} />
         )
     }
@@ -134,7 +114,7 @@ const Films = () => {
 
     return (
         <View style={styles.container}>
-            {loader ? loaderView() : renderUI()}
+            {renderUI()}
             {modal && showModal()}
         </View>
     );
